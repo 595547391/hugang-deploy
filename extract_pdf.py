@@ -16,8 +16,8 @@ def process_pdf(pdf_path, output_path, name):
     page = doc[0]
     print(f"页面尺寸: {page.rect.width} x {page.rect.height}")
 
-    # 将页面渲染为高分辨率图片 (4倍缩放提高清晰度)
-    mat = fitz.Matrix(4, 4)
+    # 将页面渲染为超高分辨率图片 (8倍缩放提高清晰度)
+    mat = fitz.Matrix(8, 8)
     pix = page.get_pixmap(matrix=mat)
 
     # 转换为PIL Image
@@ -80,9 +80,9 @@ def process_pdf(pdf_path, output_path, name):
 
     print(f"调整比例后尺寸: {final_img.size}")
 
-    # 调整到高清尺寸（宽度1200，高度2400）
-    final_width = 1200
-    final_height = 2400
+    # 调整到超高清尺寸（宽度2400，高度4800）
+    final_width = 2400
+    final_height = 4800
     final_img = final_img.resize((final_width, final_height), Image.LANCZOS)
     print(f"最终高清尺寸: {final_img.size}")
 
