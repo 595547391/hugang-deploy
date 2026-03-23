@@ -1,13 +1,495 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>护岗部署应用</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>护岗部署应用</title>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #FFFFFF;
+      overflow-x: hidden;
+    }
+    
+    /* 主页面 */
+    .main-page {
+      min-height: 100vh;
+      background: #FFFFFF;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      text-align: center;
+      padding: 20px 0;
+    }
+    
+    .main-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 8px;
+    }
+    
+    .sub-title {
+      font-size: 14px;
+      color: #666666;
+    }
+    
+    /* 双栏布局 */
+    .row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .column {
+      flex: 1;
+    }
+    
+    .column-header {
+      font-size: 16px;
+      font-weight: 600;
+      color: #000000;
+      margin-bottom: 8px;
+    }
+    
+    .name-textarea {
+      width: 100%;
+      height: 120px;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: #F5F5F5;
+      font-size: 14px;
+      color: #333333;
+      resize: none;
+      outline: none;
+      font-family: inherit;
+    }
+    
+    .name-textarea::placeholder {
+      color: #999999;
+    }
+    
+    /* 预览卡片 */
+    .preview-section {
+      flex: 1;
+    }
+    
+    .preview-card {
+      background: #F5F5F5;
+      border-radius: 12px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .preview-image {
+      flex: 1;
+      min-height: 150px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 8px;
+      background-color: #E0E0E0;
+    }
+    
+    .update-btn {
+      width: 100%;
+      height: 36px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 8px;
+      background: #E8E8E8;
+      color: #2563EB;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    /* 底部按钮 */
+    .footer {
+      padding: 16px 0;
+    }
+    
+    .start-btn {
+      width: 100%;
+      height: 50px;
+      border: none;
+      border-radius: 25px;
+      background: #4F46E5;
+      color: #FFFFFF;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    /* 部署页面 */
+    .deploy-page {
+      display: none;
+      min-height: 100vh;
+      flex-direction: column;
+      background: #f5f5f5;
+    }
+    
+    .deploy-page.active {
+      display: flex;
+    }
+    
+    .main-page.hidden {
+      display: none;
+    }
+    
+    .tip-text {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.75);
+      color: #FFFFFF;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      z-index: 100;
+      pointer-events: none;
+      transition: opacity 0.5s;
+    }
+    
+    .tip-text.hidden {
+      opacity: 0;
+    }
+    
+    .deploy-area {
+      flex: 1;
+      width: 100%;
+      background-size: contain;
+      background-position: top center;
+      background-repeat: no-repeat;
+      background-color: #e0e0e0;
+      position: relative;
+      overflow: hidden;
+      min-height: calc(100vw * 2);
+    }
+    
+    .name-label {
+      position: absolute;
+      width: 108px;
+      height: 36px;
+      background: rgba(135, 206, 250, 0.3);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2563EB;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: move;
+      touch-action: none;
+      user-select: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .name-label.flashing {
+      animation: flash 0.3s ease-in-out infinite;
+    }
+    
+    @keyframes flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    
+    .bottom-bar {
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #FFFFFF;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-btn {
+      flex: 1;
+      height: 44px;
+      border: 2px solid #4F46E5;
+      background: #FFFFFF;
+      color: #4F46E5;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .action-btn.primary {
+      background: #4F46E5;
+      color: #FFFFFF;
+    }
+  </style>
+</head>
+<body>
+  <!-- 主页面 -->
+  <div id="mainPage" class="main-page">
+    <div class="header">
+      <h1 class="main-title">护岗部署</h1>
+      <p class="sub-title">输入人员名单安排具体岗位</p>
+    </div>
+    
+    <div class="row">
+      <div class="column">
+        <div class="column-header">上午班名单</div>
+        <textarea id="morningNames" class="name-textarea" placeholder="输入或粘贴名字&#10;每行一个名字"></textarea>
+      </div>
+      <div class="column">
+        <div class="column-header">傍晚班名单</div>
+        <textarea id="eveningNames" class="name-textarea" placeholder="输入或粘贴名字&#10;每行一个名字"></textarea>
+      </div>
+    </div>
+    
+    <div class="row preview-section">
+      <div class="column">
+        <div class="column-header">早上</div>
+        <div class="preview-card">
+          <div class="preview-image" style="background-image: url('morning-bg.png')"></div>
+          <button class="update-btn" onclick="startDeploy('morning')">更新图片</button>
+        </div>
+      </div>
+      <div class="column">
+        <div class="column-header">傍晚</div>
+        <div class="preview-card">
+          <div class="preview-image" style="background-image: url('evening-bg.png')"></div>
+          <button class="update-btn" onclick="startDeploy('evening')">更新图片</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <button class="start-btn" onclick="startDeploy('morning')">开始护岗部署</button>
+    </div>
+  </div>
+  
+  <!-- 部署页面 -->
+  <div id="deployPage" class="deploy-page">
+    <div id="tipText" class="tip-text">拖动名字可自由移动位置</div>
+    <div id="deployArea" class="deploy-area"></div>
+    <div class="bottom-bar">
+      <button class="action-btn" onclick="goBack()">返回</button>
+      <button class="action-btn primary" onclick="saveImage()">保存图片</button>
+      <button class="action-btn" onclick="switchType()">切换班次</button>
+    </div>
+  </div>
+  
+  <script>
+    // 数据存储
+    const STORAGE_KEY = 'guard-deploy-data';
+    
+    function loadData() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) return JSON.parse(stored);
+      } catch (e) {
+        console.error('加载数据失败:', e);
+      }
+      return {
+        morningNames: [],
+        eveningNames: [],
+        morningPositions: {},
+        eveningPositions: {}
+      };
+    }
+    
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      } catch (e) {
+        console.error('保存数据失败:', e);
+      }
+    }
+    
+    let appData = loadData();
+    let currentType = 'morning';
+    
+    // DOM 元素
+    const mainPage = document.getElementById('mainPage');
+    const deployPage = document.getElementById('deployPage');
+    const deployArea = document.getElementById('deployArea');
+    const tipText = document.getElementById('tipText');
+    const morningNamesEl = document.getElementById('morningNames');
+    const eveningNamesEl = document.getElementById('eveningNames');
+    
+    // 初始化
+    function init() {
+      morningNamesEl.value = appData.morningNames.join('\n');
+      eveningNamesEl.value = appData.eveningNames.join('\n');
+      
+      morningNamesEl.addEventListener('input', function() {
+        appData.morningNames = this.value.split('\n').map(n => n.trim()).filter(n => n);
+        saveData();
+      });
+      
+      eveningNamesEl.addEventListener('input', function() {
+        appData.eveningNames = this.value.split('\n').map(n => n.trim()).filter(n => n);
+        saveData();
+      });
+    }
+    
+    // 进入部署模式
+    function startDeploy(type) {
+      currentType = type;
+      mainPage.classList.add('hidden');
+      deployPage.classList.add('active');
+      
+      // 设置背景图
+      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg.png')" : "url('evening-bg.png')";
+      
+      // 显示提示
+      tipText.classList.remove('hidden');
+      setTimeout(() => {
+        tipText.classList.add('hidden');
+      }, 3000);
+      
+      // 渲染名字标签
+      renderLabels();
+    }
+    
+    // 渲染名字标签
+    function renderLabels() {
+      deployArea.innerHTML = '';
+      const names = currentType === 'morning' ? appData.morningNames : appData.eveningNames;
+      const positions = currentType === 'morning' ? appData.morningPositions : appData.eveningPositions;
+      
+      names.forEach((name, index) => {
+        const label = document.createElement('div');
+        label.className = 'name-label';
+        label.textContent = name;
+        label.dataset.name = name;
+        
+        if (positions[name]) {
+          label.style.left = positions[name].x + 'px';
+          label.style.top = positions[name].y + 'px';
+        } else {
+          label.style.right = '20px';
+          label.style.top = (20 + index * 45) + 'px';
+          label.classList.add('flashing');
+          setTimeout(() => label.classList.remove('flashing'), 3000);
+        }
+        
+        // 拖拽事件
+        label.addEventListener('mousedown', startDrag);
+        label.addEventListener('touchstart', startDrag, { passive: false });
+        
+        deployArea.appendChild(label);
+      });
+    }
+    
+    // 拖拽功能
+    let dragEl = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    
+    function startDrag(e) {
+      e.preventDefault();
+      dragEl = e.target;
+      
+      const rect = dragEl.getBoundingClientRect();
+      const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+      const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+      
+      dragOffsetX = clientX - rect.left;
+      dragOffsetY = clientY - rect.top;
+      
+      dragEl.style.right = 'auto';
+      
+      document.addEventListener('mousemove', onDrag);
+      document.addEventListener('mouseup', endDrag);
+      document.addEventListener('touchmove', onDrag, { passive: false });
+      document.addEventListener('touchend', endDrag);
+    }
+    
+    function onDrag(e) {
+      if (!dragEl) return;
+      e.preventDefault();
+      
+      const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+      const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+      
+      const areaRect = deployArea.getBoundingClientRect();
+      
+      let x = clientX - areaRect.left - dragOffsetX;
+      let y = clientY - areaRect.top - dragOffsetY;
+      
+      x = Math.max(0, Math.min(x, areaRect.width - 108));
+      y = Math.max(0, Math.min(y, areaRect.height - 36));
+      
+      dragEl.style.left = x + 'px';
+      dragEl.style.top = y + 'px';
+    }
+    
+    function endDrag() {
+      if (dragEl) {
+        const name = dragEl.dataset.name;
+        const positions = currentType === 'morning' ? appData.morningPositions : appData.eveningPositions;
+        positions[name] = {
+          x: parseInt(dragEl.style.left) || 0,
+          y: parseInt(dragEl.style.top) || 0
+        };
+        saveData();
+      }
+      
+      dragEl = null;
+      document.removeEventListener('mousemove', onDrag);
+      document.removeEventListener('mouseup', endDrag);
+      document.removeEventListener('touchmove', onDrag);
+      document.removeEventListener('touchend', endDrag);
+    }
+    
+    // 返回主页
+    function goBack() {
+      deployPage.classList.remove('active');
+      mainPage.classList.remove('hidden');
+      morningNamesEl.value = appData.morningNames.join('\n');
+      eveningNamesEl.value = appData.eveningNames.join('\n');
+    }
+    
+    // 切换班次
+    function switchType() {
+      currentType = currentType === 'morning' ? 'evening' : 'morning';
+      deployArea.style.backgroundImage = currentType === 'morning' ? "url('morning-bg.png')" : "url('evening-bg.png')";
+      renderLabels();
+    }
+    
+    // 保存图片
+    async function saveImage() {
+      try {
+        const canvas = await html2canvas(deployArea, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true
+        });
+        
+        const link = document.createElement('a');
+        link.download = (currentType === 'morning' ? '上午班' : '傍晚班') + '部署图.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (error) {
+        console.error('保存图片失败:', error);
+        alert('保存图片失败，请重试');
+      }
+    }
+    
+    // 初始化应用
+    init();
+  </script>
+</body>
 </html>
