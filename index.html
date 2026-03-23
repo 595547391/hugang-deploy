@@ -152,21 +152,29 @@
     
     .tip-text {
       position: fixed;
-      top: 50%;
+      top: 20px;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.75);
       color: #FFFFFF;
-      padding: 16px 32px;
+      padding: 12px 24px;
       border-radius: 8px;
       font-size: 16px;
       z-index: 100;
       pointer-events: none;
-      transition: opacity 0.5s;
+    }
+    
+    .tip-text.flashing {
+      animation: tipFlash 0.4s ease-in-out 7;
     }
     
     .tip-text.hidden {
-      opacity: 0;
+      display: none;
+    }
+    
+    @keyframes tipFlash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
     }
     
     .deploy-area {
@@ -185,7 +193,7 @@
       position: absolute;
       width: 108px;
       height: 36px;
-      background: rgba(135, 206, 250, 0.3);
+      background: transparent;
       border-radius: 18px;
       display: flex;
       align-items: center;
@@ -196,16 +204,20 @@
       cursor: move;
       touch-action: none;
       user-select: none;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
     
-    .name-label.flashing {
-      animation: flash 0.3s ease-in-out infinite;
+    .name-label.flashing-bg {
+      background: rgba(135, 206, 250, 0.3);
+      animation: labelFlash 0.3s ease-in-out 5;
     }
     
-    @keyframes flash {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
+    .name-label.flashing-bg.done {
+      background: transparent;
+    }
+    
+    @keyframes labelFlash {
+      0%, 100% { background: rgba(135, 206, 250, 0.3); }
+      50% { background: transparent; }
     }
     
     .bottom-bar {
@@ -354,11 +366,14 @@
       // 更新底部按钮
       updateBottomBar();
       
-      // 显示提示
+      // 显示提示文字并闪烁7次
+      tipText.textContent = '挪动名字进行点位部署';
       tipText.classList.remove('hidden');
+      tipText.classList.add('flashing');
       setTimeout(() => {
         tipText.classList.add('hidden');
-      }, 3000);
+        tipText.classList.remove('flashing');
+      }, 2800); // 0.4s * 7次 = 2.8s
       
       // 渲染名字标签
       renderLabels();
@@ -392,7 +407,7 @@
       
       names.forEach((name, index) => {
         const label = document.createElement('div');
-        label.className = 'name-label';
+        label.className = 'name-label flashing-bg';
         label.textContent = name;
         label.dataset.name = name;
         
@@ -402,8 +417,6 @@
         } else {
           label.style.right = '20px';
           label.style.top = (20 + index * 45) + 'px';
-          label.classList.add('flashing');
-          setTimeout(() => label.classList.remove('flashing'), 3000);
         }
         
         // 拖拽事件
@@ -412,6 +425,14 @@
         
         deployArea.appendChild(label);
       });
+      
+      // 所有标签闪烁5次后移除背景（0.3s * 5次 = 1.5s）
+      setTimeout(() => {
+        document.querySelectorAll('.name-label').forEach(label => {
+          label.classList.remove('flashing-bg');
+          label.classList.add('done');
+        });
+      }, 1500);
     }
     
     // 拖拽功能
@@ -488,6 +509,16 @@
       currentType = 'evening';
       deployArea.style.backgroundImage = "url('evening-bg.png')";
       updateBottomBar();
+      
+      // 显示提示文字并闪烁7次
+      tipText.textContent = '挪动名字进行点位部署';
+      tipText.classList.remove('hidden');
+      tipText.classList.add('flashing');
+      setTimeout(() => {
+        tipText.classList.add('hidden');
+        tipText.classList.remove('flashing');
+      }, 2800);
+      
       renderLabels();
     }
     
@@ -496,6 +527,16 @@
       currentType = 'morning';
       deployArea.style.backgroundImage = "url('morning-bg.png')";
       updateBottomBar();
+      
+      // 显示提示文字并闪烁7次
+      tipText.textContent = '挪动名字进行点位部署';
+      tipText.classList.remove('hidden');
+      tipText.classList.add('flashing');
+      setTimeout(() => {
+        tipText.classList.add('hidden');
+        tipText.classList.remove('flashing');
+      }, 2800);
+      
       renderLabels();
     }
     
