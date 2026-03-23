@@ -335,15 +335,13 @@
       <div class="column">
         <div class="column-header">早上</div>
         <div class="preview-card">
-          <div id="morningPreviewLoading" class="preview-loading">背景图加载中...</div>
-          <div id="morningPreviewImage" class="preview-image"></div>
+          <img src="morning-bg.jpg" style="width:100%;height:auto;border-radius:8px;" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><text x=%2210%22 y=%2250%22 fill=%22%23666%22>加载失败</text></svg>'">
         </div>
       </div>
       <div class="column">
         <div class="column-header">傍晚</div>
         <div class="preview-card">
-          <div id="eveningPreviewLoading" class="preview-loading">背景图加载中...</div>
-          <div id="eveningPreviewImage" class="preview-image"></div>
+          <img src="evening-bg.jpg" style="width:100%;height:auto;border-radius:8px;" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><text x=%2210%22 y=%2250%22 fill=%22%23666%22>加载失败</text></svg>'">
         </div>
       </div>
     </div>
@@ -687,32 +685,8 @@
     // 初始化应用
     init();
     
-    // 页面加载完成后立即显示，图片后台加载
+    // 预加载图片供保存时使用
     window.addEventListener('load', function() {
-      // 预加载小图，加载完成后显示
-      const smallImgs = [
-        { src: 'morning-bg.jpg', loadingId: 'morningPreviewLoading', imageId: 'morningPreviewImage' },
-        { src: 'evening-bg.jpg', loadingId: 'eveningPreviewLoading', imageId: 'eveningPreviewImage' }
-      ];
-      
-      smallImgs.forEach(item => {
-        const img = new Image();
-        img.onload = () => {
-          // 隐藏加载提示
-          const loadingEl = document.getElementById(item.loadingId);
-          if (loadingEl) loadingEl.classList.add('hidden');
-          // 设置背景图
-          const imageEl = document.getElementById(item.imageId);
-          if (imageEl) imageEl.style.backgroundImage = `url('${item.src}')`;
-        };
-        img.onerror = () => {
-          const loadingEl = document.getElementById(item.loadingId);
-          if (loadingEl) loadingEl.textContent = '图片加载失败';
-        };
-        img.src = item.src;
-      });
-      
-      // 预加载图片供保存时使用
       const imgs = ['morning-bg.jpg', 'evening-bg.jpg'];
       imgs.forEach(src => {
         const img = new Image();
