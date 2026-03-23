@@ -384,9 +384,9 @@
       const bottomBar = document.getElementById('bottomBar');
       
       if (currentType === 'morning') {
-        // 早上部署：返回、保存图片、继续傍晚部署
+        // 早上部署：返回-改名单、保存图片、继续傍晚部署
         bottomBar.innerHTML = `
-          <button class="action-btn" onclick="goBack()">返回</button>
+          <button class="action-btn" onclick="goBack()">返回-改名单</button>
           <button class="action-btn primary" onclick="saveImage()">保存图片</button>
           <button class="action-btn" onclick="goToEvening()">继续傍晚部署</button>
         `;
