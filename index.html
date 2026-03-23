@@ -319,13 +319,13 @@
       <div class="column">
         <div class="column-header">早上</div>
         <div class="preview-card">
-          <div class="preview-image" style="background-image: url('morning-bg.jpg')"></div>
+          <div class="preview-image" style="background-image: url('morning-bg.webp')"></div>
         </div>
       </div>
       <div class="column">
         <div class="column-header">傍晚</div>
         <div class="preview-card">
-          <div class="preview-image" style="background-image: url('evening-bg.jpg')"></div>
+          <div class="preview-image" style="background-image: url('evening-bg.webp')"></div>
         </div>
       </div>
     </div>
@@ -405,7 +405,7 @@
       deployPage.classList.add('active');
       
       // 设置背景图
-      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg.jpg')" : "url('evening-bg.jpg')";
+      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg.webp')" : "url('evening-bg.webp')";
       
       // 更新底部按钮
       updateBottomBar();
@@ -551,7 +551,7 @@
     // 前往傍晚部署
     function goToEvening() {
       currentType = 'evening';
-      deployArea.style.backgroundImage = "url('evening-bg.jpg')";
+      deployArea.style.backgroundImage = "url('evening-bg.webp')";
       updateBottomBar();
       
       // 显示提示文字并闪烁7次
@@ -569,7 +569,7 @@
     // 返回早上部署
     function goToMorning() {
       currentType = 'morning';
-      deployArea.style.backgroundImage = "url('morning-bg.jpg')";
+      deployArea.style.backgroundImage = "url('morning-bg.webp')";
       updateBottomBar();
       
       // 显示提示文字并闪烁7次
@@ -593,7 +593,7 @@
         loadingDiv.innerHTML = '<div>正在生成图片...</div>';
         document.body.appendChild(loadingDiv);
         
-        const bgSrc = currentType === 'morning' ? 'morning-bg.jpg' : 'evening-bg.jpg';
+        const bgSrc = currentType === 'morning' ? 'morning-bg.webp' : 'evening-bg.webp';
         
         // 加载背景图
         const bgImg = new Image();
@@ -660,7 +660,7 @@
     // 页面加载完成后隐藏加载遮罩
     window.addEventListener('load', function() {
       // 预加载背景图片（小图）
-      const imgs = ['morning-bg.jpg', 'evening-bg.jpg'];
+      const imgs = ['morning-bg.webp', 'evening-bg.webp'];
       let loaded = 0;
       
       imgs.forEach(src => {
