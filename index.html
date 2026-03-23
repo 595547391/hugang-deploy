@@ -606,8 +606,8 @@
         
         // 创建与大图同尺寸的 canvas
         const canvas = document.createElement('canvas');
-        canvas.width = bgImg.width;   // 2400
-        canvas.height = bgImg.height; // 4800
+        canvas.width = bgImg.width;   // 自动获取大图宽度
+        canvas.height = bgImg.height; // 自动获取大图高度
         const ctx = canvas.getContext('2d');
         
         // 绘制背景图
