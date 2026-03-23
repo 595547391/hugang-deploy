@@ -618,7 +618,7 @@
         const scaleX = bgImg.width / deployAreaRect.width;
         const scaleY = bgImg.height / deployAreaRect.height;
         
-        // 绘制名字标签
+        // 绘制名字标签（透明背景，只绘制文字）
         const nameElements = deployArea.querySelectorAll('.name-label');
         nameElements.forEach(el => {
           const rect = el.getBoundingClientRect();
@@ -629,12 +629,10 @@
           const width = rect.width * scaleX;
           const height = rect.height * scaleY;
           
-          // 绘制名字背景
-          ctx.fillStyle = '#FFA500';
-          ctx.fillRect(x, y, width, height);
+          // 不绘制背景，保持透明
           
           // 绘制名字文字
-          ctx.fillStyle = '#000000';
+          ctx.fillStyle = '#2563EB';
           ctx.font = `bold ${Math.round(height * 0.5)}px sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
