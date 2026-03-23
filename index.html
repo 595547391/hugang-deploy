@@ -220,8 +220,8 @@
     .deploy-area {
       flex: 1;
       width: 100%;
-      background-size: contain;
-      background-position: top center;
+      background-size: cover;
+      background-position: center;
       background-repeat: no-repeat;
       background-color: #e0e0e0;
       position: relative;
@@ -319,13 +319,13 @@
       <div class="column">
         <div class="column-header">早上</div>
         <div class="preview-card">
-          <div class="preview-image" style="background-image: url('morning-bg-small.jpg')"></div>
+          <div class="preview-image" style="background-image: url('morning-bg.jpg')"></div>
         </div>
       </div>
       <div class="column">
         <div class="column-header">傍晚</div>
         <div class="preview-card">
-          <div class="preview-image" style="background-image: url('evening-bg-small.jpg')"></div>
+          <div class="preview-image" style="background-image: url('evening-bg.jpg')"></div>
         </div>
       </div>
     </div>
@@ -405,7 +405,7 @@
       deployPage.classList.add('active');
       
       // 设置背景图
-      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg-small.jpg')" : "url('evening-bg-small.jpg')";
+      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg.jpg')" : "url('evening-bg.jpg')";
       
       // 更新底部按钮
       updateBottomBar();
@@ -551,7 +551,7 @@
     // 前往傍晚部署
     function goToEvening() {
       currentType = 'evening';
-      deployArea.style.backgroundImage = "url('evening-bg-small.jpg')";
+      deployArea.style.backgroundImage = "url('evening-bg.jpg')";
       updateBottomBar();
       
       // 显示提示文字并闪烁7次
@@ -569,7 +569,7 @@
     // 返回早上部署
     function goToMorning() {
       currentType = 'morning';
-      deployArea.style.backgroundImage = "url('morning-bg-small.jpg')";
+      deployArea.style.backgroundImage = "url('morning-bg.jpg')";
       updateBottomBar();
       
       // 显示提示文字并闪烁7次
@@ -587,40 +587,72 @@
     // 保存图片
     async function saveImage() {
       try {
-        // 切换到大图以提高下载清晰度
-        const largeBg = currentType === 'morning' ? 'morning-bg-large.jpg' : 'evening-bg-large.jpg';
-        const smallBg = currentType === 'morning' ? 'morning-bg-small.jpg' : 'evening-bg-small.jpg';
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'loading-overlay';
+        loadingDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;color:#fff;font-size:18px;z-index:99999;';
+        loadingDiv.innerHTML = '<div>正在生成图片...</div>';
+        document.body.appendChild(loadingDiv);
         
-        // 加载大图
-        const img = new Image();
-        img.src = largeBg;
+        const bgSrc = currentType === 'morning' ? 'morning-bg.jpg' : 'evening-bg.jpg';
+        
+        // 加载背景图
+        const bgImg = new Image();
+        bgImg.crossOrigin = 'anonymous';
         await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
+          bgImg.onload = resolve;
+          bgImg.onerror = reject;
+          bgImg.src = bgSrc;
         });
         
-        // 切换到大图
-        deployArea.style.backgroundImage = `url('${largeBg}')`;
+        // 创建Canvas（与背景图同尺寸）
+        const canvas = document.createElement('canvas');
+        canvas.width = bgImg.width;
+        canvas.height = bgImg.height;
+        const ctx = canvas.getContext('2d');
         
-        // 等待背景图渲染
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // 绘制背景图
+        ctx.drawImage(bgImg, 0, 0);
         
-        const canvas = await html2canvas(deployArea, {
-          backgroundColor: null,
-          scale: 2,
-          useCORS: true
+        // 计算缩放比例
+        const deployAreaRect = deployArea.getBoundingClientRect();
+        const scaleX = bgImg.width / deployAreaRect.width;
+        const scaleY = bgImg.height / deployAreaRect.height;
+        
+        // 绘制名字标签
+        const nameElements = deployArea.querySelectorAll('.name-label');
+        nameElements.forEach(el => {
+          const rect = el.getBoundingClientRect();
+          const deployRect = deployArea.getBoundingClientRect();
+          
+          const x = (rect.left - deployRect.left) * scaleX;
+          const y = (rect.top - deployRect.top) * scaleY;
+          const width = rect.width * scaleX;
+          const height = rect.height * scaleY;
+          
+          // 绘制名字背景
+          ctx.fillStyle = '#FFA500';
+          ctx.fillRect(x, y, width, height);
+          
+          // 绘制名字文字
+          ctx.fillStyle = '#000000';
+          ctx.font = `bold ${Math.round(height * 0.5)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(el.textContent, x + width / 2, y + height / 2);
         });
         
+        // 导出图片
         const link = document.createElement('a');
         link.download = (currentType === 'morning' ? '上午班' : '傍晚班') + '部署图.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
         
-        // 切换回小图
-        deployArea.style.backgroundImage = `url('${smallBg}')`;
+        document.body.removeChild(loadingDiv);
       } catch (error) {
         console.error('保存图片失败:', error);
         alert('保存图片失败，请重试');
+        const loading = document.getElementById('loading-overlay');
+        if (loading) loading.remove();
       }
     }
     
@@ -630,7 +662,7 @@
     // 页面加载完成后隐藏加载遮罩
     window.addEventListener('load', function() {
       // 预加载背景图片（小图）
-      const imgs = ['morning-bg-small.jpg', 'evening-bg-small.jpg'];
+      const imgs = ['morning-bg.jpg', 'evening-bg.jpg'];
       let loaded = 0;
       
       imgs.forEach(src => {
