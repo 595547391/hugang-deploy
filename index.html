@@ -273,14 +273,14 @@
       <div class="column">
         <div class="column-header">早上</div>
         <div class="preview-card">
-          <div class="preview-image" style="background-image: url('morning-bg.png')"></div>
+          <div class="preview-image" style="background-image: url('morning-bg.jpg')"></div>
           <button class="update-btn" onclick="startDeploy('morning')">更新图片</button>
         </div>
       </div>
       <div class="column">
         <div class="column-header">傍晚</div>
         <div class="preview-card">
-          <div class="preview-image" style="background-image: url('evening-bg.png')"></div>
+          <div class="preview-image" style="background-image: url('evening-bg.jpg')"></div>
           <button class="update-btn" onclick="startDeploy('evening')">更新图片</button>
         </div>
       </div>
@@ -361,7 +361,7 @@
       deployPage.classList.add('active');
       
       // 设置背景图
-      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg.png')" : "url('evening-bg.png')";
+      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg.jpg')" : "url('evening-bg.jpg')";
       
       // 更新底部按钮
       updateBottomBar();
@@ -507,7 +507,7 @@
     // 前往傍晚部署
     function goToEvening() {
       currentType = 'evening';
-      deployArea.style.backgroundImage = "url('evening-bg.png')";
+      deployArea.style.backgroundImage = "url('evening-bg.jpg')";
       updateBottomBar();
       
       // 显示提示文字并闪烁7次
@@ -525,7 +525,7 @@
     // 返回早上部署
     function goToMorning() {
       currentType = 'morning';
-      deployArea.style.backgroundImage = "url('morning-bg.png')";
+      deployArea.style.backgroundImage = "url('morning-bg.jpg')";
       updateBottomBar();
       
       // 显示提示文字并闪烁7次
