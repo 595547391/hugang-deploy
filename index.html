@@ -591,51 +591,41 @@
         const loadingDiv = document.createElement('div');
         loadingDiv.id = 'loading-overlay';
         loadingDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;flex-direction:column;justify-content:center;align-items:center;color:#fff;font-size:18px;z-index:99999;';
-        loadingDiv.innerHTML = '<div style="margin-bottom:10px;">正在生成高清图片...</div><div style="font-size:14px;color:#ccc;">请稍候，大图加载中</div>';
+        loadingDiv.innerHTML = '<div>正在生成图片...</div>';
         document.body.appendChild(loadingDiv);
         
         const largeBg = currentType === 'morning' ? 'morning-bg-large.jpg' : 'evening-bg-large.jpg';
         const smallBg = currentType === 'morning' ? 'morning-bg-small.jpg' : 'evening-bg-small.jpg';
         
-        // 加载大图（带超时）
-        const bgImg = new Image();
-        bgImg.crossOrigin = 'anonymous';
+        // 优先使用已预加载的大图
+        let bgImg = window.preloadedLargeImages && window.preloadedLargeImages[largeBg];
         
-        const loadPromise = new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            reject(new Error('大图加载超时，使用小图'));
-          }, 30000); // 30秒超时
+        if (!bgImg) {
+          // 如果大图未预加载完成，等待加载
+          console.log('大图未预加载，开始加载...');
+          loadingDiv.innerHTML = '<div>正在加载高清图...</div>';
           
-          bgImg.onload = () => {
-            clearTimeout(timeout);
-            resolve(true);
-          };
-          bgImg.onerror = () => {
-            clearTimeout(timeout);
-            reject(new Error('大图加载失败'));
-          };
-        });
-        
-        bgImg.src = largeBg + '?t=' + Date.now();
-        
-        let useLarge = true;
-        try {
-          await loadPromise;
-        } catch (e) {
-          console.log(e.message);
-          // 大图加载失败，使用小图
-          bgImg.src = smallBg + '?t=' + Date.now();
+          bgImg = new Image();
+          bgImg.crossOrigin = 'anonymous';
+          
           await new Promise((resolve, reject) => {
-            bgImg.onload = resolve;
-            bgImg.onerror = reject;
+            const timeout = setTimeout(() => reject(new Error('加载超时')), 15000);
+            bgImg.onload = () => { clearTimeout(timeout); resolve(); };
+            bgImg.onerror = () => { clearTimeout(timeout); reject(); };
+            bgImg.src = largeBg;
+          }).catch(() => {
+            // 大图加载失败，使用小图
+            console.log('大图加载失败，使用小图');
+            return new Promise(resolve => {
+              bgImg.onload = resolve;
+              bgImg.src = smallBg;
+            });
           });
-          useLarge = false;
+        } else {
+          console.log('使用已预加载的大图');
         }
         
-        // 更新提示
-        loadingDiv.innerHTML = '<div>正在绘制图片...</div>';
-        
-        // 创建与大图同尺寸的 canvas
+        // 创建与图片同尺寸的 canvas
         const canvas = document.createElement('canvas');
         canvas.width = bgImg.width;
         canvas.height = bgImg.height;
@@ -650,7 +640,6 @@
         const scaleY = bgImg.height / deployAreaRect.height;
         
         console.log('Canvas尺寸:', canvas.width, 'x', canvas.height);
-        console.log('缩放比例:', scaleX, scaleY);
         
         // 获取所有名字元素
         const nameElements = deployArea.querySelectorAll('.name-label');
@@ -666,8 +655,6 @@
           const width = rect.width * scaleX;
           const height = rect.height * scaleY;
           
-          console.log('绘制名字:', el.textContent, '位置:', x, y, '尺寸:', width, height);
-          
           // 绘制名字背景
           ctx.fillStyle = el.style.backgroundColor || '#FFA500';
           ctx.fillRect(x, y, width, height);
@@ -678,6 +665,7 @@
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText(el.textContent, x + width / 2, y + height / 2);
+        });
         });
         
         // 导出图片
@@ -703,19 +691,36 @@
     // 页面加载完成后隐藏加载遮罩
     window.addEventListener('load', function() {
       // 预加载背景图片（小图）
-      const imgs = ['morning-bg-small.jpg', 'evening-bg-small.jpg'];
+      const smallImgs = ['morning-bg-small.jpg', 'evening-bg-small.jpg'];
       let loaded = 0;
       
-      imgs.forEach(src => {
+      smallImgs.forEach(src => {
         const img = new Image();
         img.onload = img.onerror = () => {
           loaded++;
-          if (loaded === imgs.length) {
+          if (loaded === smallImgs.length) {
             document.getElementById('loadingOverlay').classList.add('hidden');
+            // 小图加载完后，后台静默预加载大图
+            preloadLargeImages();
           }
         };
         img.src = src;
       });
+      
+      // 后台预加载大图
+      function preloadLargeImages() {
+        const largeImgs = ['morning-bg-large.jpg', 'evening-bg-large.jpg'];
+        largeImgs.forEach(src => {
+          const img = new Image();
+          img.src = src;
+          // 存储到全局对象，方便保存时使用
+          if (!window.preloadedLargeImages) window.preloadedLargeImages = {};
+          img.onload = () => {
+            window.preloadedLargeImages[src] = img;
+            console.log('大图预加载完成:', src);
+          };
+        });
+      }
     });
   </script>
 </body>
