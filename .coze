@@ -6,4 +6,5 @@ requires = ["nodejs-24"]
 run = ["npx", "serve", "-l", "5000"]
 
 [deploy]
+build = ["echo", "build complete"]
 run = ["npx", "serve", "-l", "5000"]
