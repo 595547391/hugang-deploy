@@ -283,10 +283,8 @@
   <div id="deployPage" class="deploy-page">
     <div id="tipText" class="tip-text">拖动名字可自由移动位置</div>
     <div id="deployArea" class="deploy-area"></div>
-    <div class="bottom-bar">
-      <button class="action-btn" onclick="goBack()">返回</button>
-      <button class="action-btn primary" onclick="saveImage()">保存图片</button>
-      <button class="action-btn" onclick="switchType()">切换班次</button>
+    <div id="bottomBar" class="bottom-bar">
+      <!-- 按钮由JS动态生成 -->
     </div>
   </div>
   
@@ -353,6 +351,9 @@
       // 设置背景图
       deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg.png')" : "url('evening-bg.png')";
       
+      // 更新底部按钮
+      updateBottomBar();
+      
       // 显示提示
       tipText.classList.remove('hidden');
       setTimeout(() => {
@@ -361,6 +362,26 @@
       
       // 渲染名字标签
       renderLabels();
+    }
+    
+    // 更新底部按钮栏
+    function updateBottomBar() {
+      const bottomBar = document.getElementById('bottomBar');
+      
+      if (currentType === 'morning') {
+        // 早上部署：返回、保存图片、继续傍晚部署
+        bottomBar.innerHTML = `
+          <button class="action-btn" onclick="goBack()">返回</button>
+          <button class="action-btn primary" onclick="saveImage()">保存图片</button>
+          <button class="action-btn" onclick="goToEvening()">继续傍晚部署</button>
+        `;
+      } else {
+        // 傍晚部署：返回早上部署、保存图片
+        bottomBar.innerHTML = `
+          <button class="action-btn" onclick="goToMorning()">返回早上部署</button>
+          <button class="action-btn primary" onclick="saveImage()">保存图片</button>
+        `;
+      }
     }
     
     // 渲染名字标签
@@ -462,10 +483,19 @@
       eveningNamesEl.value = appData.eveningNames.join('\n');
     }
     
-    // 切换班次
-    function switchType() {
-      currentType = currentType === 'morning' ? 'evening' : 'morning';
-      deployArea.style.backgroundImage = currentType === 'morning' ? "url('morning-bg.png')" : "url('evening-bg.png')";
+    // 前往傍晚部署
+    function goToEvening() {
+      currentType = 'evening';
+      deployArea.style.backgroundImage = "url('evening-bg.png')";
+      updateBottomBar();
+      renderLabels();
+    }
+    
+    // 返回早上部署
+    function goToMorning() {
+      currentType = 'morning';
+      deployArea.style.backgroundImage = "url('morning-bg.png')";
+      updateBottomBar();
       renderLabels();
     }
     
