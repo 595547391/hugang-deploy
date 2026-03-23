@@ -319,13 +319,13 @@
       <div class="column">
         <div class="column-header">早上</div>
         <div class="preview-card">
-          <div class="preview-image" style="background-image: url('morning-bg.jpg')"></div>
+          <div class="preview-image" style="background-image: url('morning-bg-small.jpg')"></div>
         </div>
       </div>
       <div class="column">
         <div class="column-header">傍晚</div>
         <div class="preview-card">
-          <div class="preview-image" style="background-image: url('evening-bg.jpg')"></div>
+          <div class="preview-image" style="background-image: url('evening-bg-small.jpg')"></div>
         </div>
       </div>
     </div>
@@ -405,7 +405,7 @@
       deployPage.classList.add('active');
       
       // 设置背景图
-      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg.jpg')" : "url('evening-bg.jpg')";
+      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg-small.jpg')" : "url('evening-bg-small.jpg')";
       
       // 更新底部按钮
       updateBottomBar();
@@ -551,7 +551,7 @@
     // 前往傍晚部署
     function goToEvening() {
       currentType = 'evening';
-      deployArea.style.backgroundImage = "url('evening-bg.jpg')";
+      deployArea.style.backgroundImage = "url('evening-bg-small.jpg')";
       updateBottomBar();
       
       // 显示提示文字并闪烁7次
@@ -569,7 +569,7 @@
     // 返回早上部署
     function goToMorning() {
       currentType = 'morning';
-      deployArea.style.backgroundImage = "url('morning-bg.jpg')";
+      deployArea.style.backgroundImage = "url('morning-bg-small.jpg')";
       updateBottomBar();
       
       // 显示提示文字并闪烁7次
@@ -587,6 +587,24 @@
     // 保存图片
     async function saveImage() {
       try {
+        // 切换到大图以提高下载清晰度
+        const largeBg = currentType === 'morning' ? 'morning-bg-large.jpg' : 'evening-bg-large.jpg';
+        const smallBg = currentType === 'morning' ? 'morning-bg-small.jpg' : 'evening-bg-small.jpg';
+        
+        // 加载大图
+        const img = new Image();
+        img.src = largeBg;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+        
+        // 切换到大图
+        deployArea.style.backgroundImage = `url('${largeBg}')`;
+        
+        // 等待背景图渲染
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         const canvas = await html2canvas(deployArea, {
           backgroundColor: null,
           scale: 2,
@@ -597,6 +615,9 @@
         link.download = (currentType === 'morning' ? '上午班' : '傍晚班') + '部署图.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
+        
+        // 切换回小图
+        deployArea.style.backgroundImage = `url('${smallBg}')`;
       } catch (error) {
         console.error('保存图片失败:', error);
         alert('保存图片失败，请重试');
@@ -608,8 +629,8 @@
     
     // 页面加载完成后隐藏加载遮罩
     window.addEventListener('load', function() {
-      // 预加载背景图片
-      const imgs = ['morning-bg.jpg', 'evening-bg.jpg'];
+      // 预加载背景图片（小图）
+      const imgs = ['morning-bg-small.jpg', 'evening-bg-small.jpg'];
       let loaded = 0;
       
       imgs.forEach(src => {
