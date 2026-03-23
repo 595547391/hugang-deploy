@@ -1,0 +1,8 @@
+{
+  "name": "hugang-deploy",
+  "version": "1.0.0",
+  "description": "护岗部署应用",
+  "scripts": {
+    "start": "npx serve -l 5000"
+  }
+}
