@@ -587,40 +587,76 @@
     // 保存图片
     async function saveImage() {
       try {
-        // 切换到大图以提高下载清晰度
+        // 显示加载提示
+        const loadingDiv = document.createElement('div');
+        loadingDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;color:#fff;font-size:18px;z-index:99999;';
+        loadingDiv.textContent = '正在生成高清图片...';
+        document.body.appendChild(loadingDiv);
+        
         const largeBg = currentType === 'morning' ? 'morning-bg-large.jpg' : 'evening-bg-large.jpg';
-        const smallBg = currentType === 'morning' ? 'morning-bg-small.jpg' : 'evening-bg-small.jpg';
         
         // 加载大图
-        const img = new Image();
-        img.src = largeBg;
+        const bgImg = new Image();
+        bgImg.crossOrigin = 'anonymous';
+        bgImg.src = largeBg + '?t=' + Date.now();
         await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
+          bgImg.onload = resolve;
+          bgImg.onerror = reject;
         });
         
-        // 切换到大图
-        deployArea.style.backgroundImage = `url('${largeBg}')`;
+        // 创建与大图同尺寸的 canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = bgImg.width;   // 2400
+        canvas.height = bgImg.height; // 4800
+        const ctx = canvas.getContext('2d');
         
-        // 等待背景图渲染
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // 绘制背景图
+        ctx.drawImage(bgImg, 0, 0);
         
-        const canvas = await html2canvas(deployArea, {
-          backgroundColor: null,
-          scale: 2,
-          useCORS: true
+        // 计算缩放比例（部署区域 vs 原图尺寸）
+        const deployAreaRect = deployArea.getBoundingClientRect();
+        const scaleX = bgImg.width / deployAreaRect.width;
+        const scaleY = bgImg.height / deployAreaRect.height;
+        
+        // 获取所有名字元素
+        const nameElements = deployArea.querySelectorAll('.name-tag');
+        
+        nameElements.forEach(el => {
+          const rect = el.getBoundingClientRect();
+          const deployRect = deployArea.getBoundingClientRect();
+          
+          // 计算在原图上的位置
+          const x = (rect.left - deployRect.left) * scaleX;
+          const y = (rect.top - deployRect.top) * scaleY;
+          const width = rect.width * scaleX;
+          const height = rect.height * scaleY;
+          
+          // 绘制名字背景
+          ctx.fillStyle = el.style.backgroundColor || '#FFA500';
+          ctx.fillRect(x, y, width, height);
+          
+          // 绘制名字文字
+          ctx.fillStyle = '#000000';
+          ctx.font = `bold ${Math.round(height * 0.5)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(el.textContent, x + width / 2, y + height / 2);
         });
         
+        // 导出图片
         const link = document.createElement('a');
         link.download = (currentType === 'morning' ? '上午班' : '傍晚班') + '部署图.png';
-        link.href = canvas.toDataURL('image/png');
+        link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
         
-        // 切换回小图
-        deployArea.style.backgroundImage = `url('${smallBg}')`;
+        // 移除加载提示
+        document.body.removeChild(loadingDiv);
       } catch (error) {
         console.error('保存图片失败:', error);
         alert('保存图片失败，请重试');
+        // 移除可能残留的加载提示
+        const loading = document.querySelector('div[style*="z-index: 99999"]');
+        if (loading) loading.remove();
       }
     }
     
