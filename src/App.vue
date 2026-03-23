@@ -3,8 +3,8 @@ import { ref } from 'vue'
 import InputPage from './components/InputPage.vue'
 import DeployPage from './components/DeployPage.vue'
 
-const currentPage = ref('input') // 'input' or 'deploy'
-const deployType = ref('morning') // 'morning' or 'evening'
+const currentPage = ref('input')
+const deployType = ref('morning')
 
 function handleNavigate(page, type) {
   currentPage.value = page
@@ -15,36 +15,21 @@ function handleNavigate(page, type) {
 </script>
 
 <template>
-  <InputPage 
-    v-if="currentPage === 'input'" 
-    @navigate="handleNavigate" 
-  />
-  <DeployPage 
-    v-else 
-    :type="deployType" 
-    @navigate="handleNavigate" 
-  />
+  <div id="app-container">
+    <InputPage 
+      v-if="currentPage === 'input'" 
+      @navigate="handleNavigate" 
+    />
+    <DeployPage 
+      v-else 
+      :type="deployType" 
+      @navigate="handleNavigate" 
+    />
+  </div>
 </template>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-}
-
-button {
-  font-family: inherit;
-}
-
-input {
-  font-family: inherit;
+#app-container {
+  min-height: 100vh;
 }
 </style>
