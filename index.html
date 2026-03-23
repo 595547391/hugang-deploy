@@ -144,22 +144,6 @@
       background-color: #E0E0E0;
     }
     
-    .preview-loading {
-      flex: 1;
-      min-height: 150px;
-      background: #E0E0E0;
-      border-radius: 8px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #666;
-      font-size: 14px;
-    }
-    
-    .preview-loading.hidden {
-      display: none;
-    }
-    
     .update-btn {
       width: 100%;
       height: 36px;
@@ -236,8 +220,8 @@
     .deploy-area {
       flex: 1;
       width: 100%;
-      background-size: cover;
-      background-position: center;
+      background-size: contain;
+      background-position: top center;
       background-repeat: no-repeat;
       background-color: #e0e0e0;
       position: relative;
@@ -307,8 +291,8 @@
   </style>
 </head>
 <body>
-  <!-- 加载遮罩（默认隐藏） -->
-  <div id="loadingOverlay" class="loading-overlay hidden">
+  <!-- 加载遮罩 -->
+  <div id="loadingOverlay" class="loading-overlay">
     <div class="loading-spinner"></div>
     <div class="loading-text">加载中...</div>
   </div>
@@ -335,13 +319,13 @@
       <div class="column">
         <div class="column-header">早上</div>
         <div class="preview-card">
-          <img src="morning-bg.jpg" style="width:100%;height:auto;border-radius:8px;" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><text x=%2210%22 y=%2250%22 fill=%22%23666%22>加载失败</text></svg>'">
+          <div class="preview-image" style="background-image: url('morning-bg-small.jpg')"></div>
         </div>
       </div>
       <div class="column">
         <div class="column-header">傍晚</div>
         <div class="preview-card">
-          <img src="evening-bg.jpg" style="width:100%;height:auto;border-radius:8px;" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><text x=%2210%22 y=%2250%22 fill=%22%23666%22>加载失败</text></svg>'">
+          <div class="preview-image" style="background-image: url('evening-bg-small.jpg')"></div>
         </div>
       </div>
     </div>
@@ -421,7 +405,7 @@
       deployPage.classList.add('active');
       
       // 设置背景图
-      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg.jpg')" : "url('evening-bg.jpg')";
+      deployArea.style.backgroundImage = type === 'morning' ? "url('morning-bg-small.jpg')" : "url('evening-bg-small.jpg')";
       
       // 更新底部按钮
       updateBottomBar();
@@ -567,7 +551,7 @@
     // 前往傍晚部署
     function goToEvening() {
       currentType = 'evening';
-      deployArea.style.backgroundImage = "url('evening-bg.jpg')";
+      deployArea.style.backgroundImage = "url('evening-bg-small.jpg')";
       updateBottomBar();
       
       // 显示提示文字并闪烁7次
@@ -585,7 +569,7 @@
     // 返回早上部署
     function goToMorning() {
       currentType = 'morning';
-      deployArea.style.backgroundImage = "url('morning-bg.jpg')";
+      deployArea.style.backgroundImage = "url('morning-bg-small.jpg')";
       updateBottomBar();
       
       // 显示提示文字并闪烁7次
@@ -603,97 +587,61 @@
     // 保存图片
     async function saveImage() {
       try {
-        // 显示加载提示
-        const loadingDiv = document.createElement('div');
-        loadingDiv.id = 'loading-overlay';
-        loadingDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;color:#fff;font-size:18px;z-index:99999;';
-        loadingDiv.innerHTML = '<div>正在生成图片...</div>';
-        document.body.appendChild(loadingDiv);
+        // 切换到大图以提高下载清晰度
+        const largeBg = currentType === 'morning' ? 'morning-bg-large.jpg' : 'evening-bg-large.jpg';
+        const smallBg = currentType === 'morning' ? 'morning-bg-small.jpg' : 'evening-bg-small.jpg';
         
-        const bgSrc = currentType === 'morning' ? 'morning-bg.jpg' : 'evening-bg.jpg';
-        
-        // 使用已预加载的图片或重新加载
-        let bgImg = window.preloadedImages && window.preloadedImages[bgSrc];
-        
-        if (!bgImg) {
-          bgImg = new Image();
-          bgImg.crossOrigin = 'anonymous';
-          await new Promise((resolve, reject) => {
-            bgImg.onload = resolve;
-            bgImg.onerror = reject;
-            bgImg.src = bgSrc;
-          });
-        }
-        
-        // 创建与图片同尺寸的 canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = bgImg.width;
-        canvas.height = bgImg.height;
-        const ctx = canvas.getContext('2d');
-        
-        // 绘制背景图
-        ctx.drawImage(bgImg, 0, 0);
-        
-        // 计算缩放比例（部署区域 vs 原图尺寸）
-        const deployAreaRect = deployArea.getBoundingClientRect();
-        const scaleX = bgImg.width / deployAreaRect.width;
-        const scaleY = bgImg.height / deployAreaRect.height;
-        
-        // 获取所有名字元素
-        const nameElements = deployArea.querySelectorAll('.name-label');
-        
-        nameElements.forEach(el => {
-          const rect = el.getBoundingClientRect();
-          const deployRect = deployArea.getBoundingClientRect();
-          
-          // 计算在原图上的位置
-          const x = (rect.left - deployRect.left) * scaleX;
-          const y = (rect.top - deployRect.top) * scaleY;
-          const width = rect.width * scaleX;
-          const height = rect.height * scaleY;
-          
-          // 绘制名字背景
-          ctx.fillStyle = el.style.backgroundColor || '#FFA500';
-          ctx.fillRect(x, y, width, height);
-          
-          // 绘制名字文字
-          ctx.fillStyle = '#000000';
-          ctx.font = `bold ${Math.round(height * 0.5)}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(el.textContent, x + width / 2, y + height / 2);
+        // 加载大图
+        const img = new Image();
+        img.src = largeBg;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
         });
         
-        // 导出图片
+        // 切换到大图
+        deployArea.style.backgroundImage = `url('${largeBg}')`;
+        
+        // 等待背景图渲染
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const canvas = await html2canvas(deployArea, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true
+        });
+        
         const link = document.createElement('a');
         link.download = (currentType === 'morning' ? '上午班' : '傍晚班') + '部署图.png';
-        link.href = canvas.toDataURL('image/png', 1.0);
+        link.href = canvas.toDataURL('image/png');
         link.click();
         
-        // 移除加载提示
-        document.body.removeChild(loadingDiv);
+        // 切换回小图
+        deployArea.style.backgroundImage = `url('${smallBg}')`;
       } catch (error) {
         console.error('保存图片失败:', error);
-        alert('保存图片失败: ' + error.message);
-        // 移除可能残留的加载提示
-        const loading = document.getElementById('loading-overlay');
-        if (loading) loading.remove();
+        alert('保存图片失败，请重试');
       }
     }
     
     // 初始化应用
     init();
     
-    // 预加载图片供保存时使用
+    // 页面加载完成后隐藏加载遮罩
     window.addEventListener('load', function() {
-      const imgs = ['morning-bg.jpg', 'evening-bg.jpg'];
+      // 预加载背景图片（小图）
+      const imgs = ['morning-bg-small.jpg', 'evening-bg-small.jpg'];
+      let loaded = 0;
+      
       imgs.forEach(src => {
         const img = new Image();
-        img.src = src;
-        if (!window.preloadedImages) window.preloadedImages = {};
-        img.onload = () => {
-          window.preloadedImages[src] = img;
+        img.onload = img.onerror = () => {
+          loaded++;
+          if (loaded === imgs.length) {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+          }
         };
+        img.src = src;
       });
     });
   </script>
