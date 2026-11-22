@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#BFE9FF">
+<title>李泳锐的学习奇遇 · 三年级上册</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <div class="nameplate">
+      <span class="nameplate__star" aria-hidden="true">★</span>
+      <b class="nameplate__name">李泳锐</b>
+      <span class="nameplate__tail">的学习奇遇</span>
+    </div>
+    <header class="hud">
+      <button class="hud__btn" id="btnBack" type="button" hidden aria-label="返回"></button>
+      <div class="hud__mid">
+        <p class="hud__kick" id="hudKicker">学习奇遇记</p>
+        <h1 class="hud__title" id="hudTitle">选择科目</h1>
+      </div>
+      <div class="hud__right">
+        <button class="hud__btn" id="btnSound" type="button" aria-label="开关音效"></button>
+        <span class="hud__stars"><i>★</i><b id="totalStars">0</b></span>
+      </div>
+    </header>
+    <main class="app" id="app"></main>
+  </div>
+  <div class="overlay" id="overlay" hidden></div>
+
+  <script src="data.js"></script>
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
